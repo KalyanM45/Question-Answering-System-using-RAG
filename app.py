@@ -17,6 +17,7 @@ os.environ["GOOGLE_API_KEY"] = os.getenv("GOOGLE_API_KEY")
 
 st.set_page_config(page_title="Document Question Answering System", layout="wide")
 st.title("Document Question Answering System")
+st.caption("Initially Ingest the Data into Vector Store and then ask questions.")
 
 llm = ChatGroq(groq_api_key=groq_api_key, model_name="Llama3-8b-8192")
 
@@ -42,19 +43,21 @@ def vector_embedding():
 
 prompt1 = st.text_input("Enter Your Question From Documents")
 
-if st.button("Documents Embedding"):
+if st.button("Ingest the Data into Vector Store"):
     vector_embedding()
     st.write("Data is Ingested in vector store database. You can now ask questions.")
 
 if prompt1:
-    if "vectors" in st.session_state:
-        document_chain = create_stuff_documents_chain(llm, prompt)
-        retriever = st.session_state.vectors.as_retriever()
-        retrieval_chain = create_retrieval_chain(retriever, document_chain)
-        start = time.process_time()
-        response = retrieval_chain.invoke({'input': prompt1})
-        st.write(f"Response time: {time.process_time() - start} seconds")
-        st.write(response['answer'])
-    else:
-        st.write("Please create the Vector Store DB first by clicking 'Documents Embedding'")
+    try:
+        if "vectors" in st.session_state:
+            document_chain = create_stuff_documents_chain(llm, prompt)
+            retriever = st.session_state.vectors.as_retriever()
+            retrieval_chain = create_retrieval_chain(retriever, document_chain)
+            start = time.process_time()
+            response = retrieval_chain.invoke({'input': prompt1})
+            st.write(f"Response time: {time.process_time() - start} seconds")
+            st.write(response['answer'])
+    except:
+        st.write("Please Ingest Data First. Click on the button - Ingest the Data into Vector Store")
+
 
